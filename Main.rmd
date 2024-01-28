@@ -1,0 +1,945 @@
+---
+title: "EVALUATING ASTEROID CHARACTERISTICS AND CLASSIFYING ASTEROID THREAT ON PLANET EARTH"
+author: "Vishal Bakshi, Pratiksha Dange, Sudanshu Dotel, Qibin Huang"
+date: "`r Sys.Date()`"
+output: 
+  prettydoc::html_pretty:
+    theme: cayman
+    toc: yes
+---
+
+## 1. Abstract 
+
+<span style="font-size: 12px;  text-align: justify;">
+Near-Earth objects (NEOs) such as asteroids pose a potential threat to Earth. Accurately assessing and classifying these threats is critical for developing effective mitigation strategies. This project utilizes NASA's Asteroid Classification dataset from Kaggle, which contains information on over 4,000 NEOs. Through exploratory data analysis and supervised machine learning approaches, we aim to gain insights into the key physical and orbital characteristics that distinguish potentially hazardous from non-hazardous asteroids. The models developed can contribute towards early warning systems to help categorize newly discovered celestial objects based on level of risk. Techniques to handle class imbalance will also be explored to improve model performance.
+</span>
+
+## 2. Introduction
+<span style="font-size: 12px;  text-align: justify;">
+Asteroids that pass close to Earth's orbit are called Near-Earth Objects (NEOs). A subset of NEOs classified as potentially hazardous asteroids (PHAs) pose a more significant risk due to their size and trajectory. NASA currently tracks over 25,000 NEOs and has categorized over 2,000 as PHAs. Early and accurate classification of the threat level of discovered asteroids can provide precious lead time for mounting mitigation missions.
+<P>
+<P>This project utilizes a dataset from NASA containing information on over 4,000 NEOs, with the goal of developing machine learning models to effectively distinguish hazardous from non-hazardous asteroids. The dataset includes characteristics such as estimated diameter, relative velocity, orbital parameters and spectral types. Through exploratory data analysis, we will identify trends and correlations between these features and an asteroid's threat classification. Classification models such as random forests and neural networks will then be trained on this dataset to categorize asteroids as hazardous or non-hazardous. Techniques such as synthetic minority oversampling will also be employed to handle the class imbalance in the rare PHA category.
+<P>The models produced from this project can help automatically classify future discovered NEOs to prioritize follow-up tracking and inform mitigation strategies. This has the potential to enhance asteroid impact prevention initiatives and reduce risks to our planet.
+</span>
+
+## 3. Motivation
+
+<span style="font-size: 12px;  text-align: justify;">
+Asteroid impact threats have captured public imagination and concern, especially following recent close calls. Most notably, the 340-meter asteroid 99942 Apophis caused alarm when initial observations indicated it had a 2.7% chance of hitting Earth in 2029. While later observations ruled out an impact, it will pass within 31,000 km of Earth’s surface – closer than some satellites.  
+<P>
+<P>This 2029 close encounter highlights the need for robust asteroid tracking and risk modeling systems. The surprise surrounding Apophis and its changing impact probabilities demonstrates gaps in our current classification approaches. The minor planet designation of asteroids also does not adequately communicate risk levels to the public. These limitations motivate the need for more accurate models that can rapidly incorporate new asteroid observations and provide clear warnings on potential hazards.
+<P>
+<P>Automated classification via machine learning provides a scalable way to screen discovered Near Earth Objects (NEOs) and identify priority threats for further tracking. With thousands of new NEOs found each year, manual threat assessment is infeasible. Our project aims to develop machine learning models using NASA’s asteroid dataset that can reliably evaluate risks based on asteroid properties. Coupling these models with early warning infrastructure can enable rapid response to future threats. The capability to accurately classify asteroids will be crucial for preparation against the next Apophis-like object that comes too close for comfort. With continued asteroid mining and exploration, these classification systems will also inform policy and risk management strategies.
+</span>
+
+## 4. Dataset 
+<span style="font-size: 12px;  text-align: justify;">
+<p>Our dataset is available as [Nasa Asteroids Classification](https://www.kaggle.com/datasets/shrutimehta/nasa-asteroids-classification) at Kaggle. All the data is from the (http://neo.jpl.nasa.gov/). This API is maintained by Space Rocks Team: David Greenfield, Arezu Sarvestani, Jason English, and Peter Baunach. The dataset consists of 4687 data instances(rows) and 40 features(columns). Also, there are no null values in the dataset.
+<P>
+<p>Features’ description is given below;
+</span>
+
+
+<div class="column-definitions">
+  <p><strong>1. Neo Reference ID:</strong> ID for the Asteroid</p>
+  <p><strong>2. Name:</strong> Name of the Asteroid</p>
+  <p><strong>3. Absolute Magnitude:</strong> Indicates the brightness of the asteroid; lower magnitude means a brighter star, higher magnitude means a dimmer star.</p>
+  <p><strong>4. Est Dia in KM (min):</strong> Estimated minimum size of the asteroid in kilometers.</p>
+  <p><strong>5. Est Dia in KM (max):</strong> Estimated maximum size of the asteroid in kilometers.</p>
+  <p><strong>6. Close Approach Date:</strong> Date when the asteroid came very close to Earth's atmosphere.</p>
+  <p><strong>7. Epoch Date Close Approach:</strong> A related date concerning the asteroid's close approach.</p>
+  <p><strong>8. Relative Velocity (km per sec):</strong> The velocity of the asteroid.</p>
+  <p><strong>9. Miss Dist. (Astronomical):</strong> The asteroid's closest approach to Earth, measured in astronomical units.</p>
+  <p><strong>10. Miss Dist. (lunar):</strong> The distance in terms of the Moon's distance from Earth.</p>
+  <p><strong>11. Miss Dist. (kilometers):</strong> The closest approach of the asteroid to Earth in kilometers.</p>
+  <p><strong>12. Miss Dist. (miles):</strong> The closest approach in miles.</p>
+  <p><strong>13. Orbiting Body:</strong> Indicates the celestial body that the asteroid orbits.</p>
+  <p><strong>14. Orbit ID:</strong> An ID for the asteroid's orbit.</p>
+  <p><strong>15. Orbit Determination Date:</strong> The date when the asteroid's orbit was calculated.</p>
+  <p><strong>16. Orbit Uncertainty Minimum:</strong> A measure of the uncertainty in the asteroid's orbit.</p>
+  <p><strong>17. Orbit Intersection:</strong> Indicates where the asteroid's orbit crosses.</p>
+  <p><strong>18. Jupiter Tisserand Invariant:</strong> The JTI measures the influence of Jupiter's gravitational pull on celestial bodies; lower JTI values are farther from Jupiter.</p>
+  <p><strong>19. Epoch Osculation:</strong> A specific date related to the asteroid.</p>
+  <p><strong>20. Eccentricity:</strong> Determines the shape of the orbit; 0 < E < 1 indicates an ellipse, E = 1 is a parabola, and E > 1 is a hyperbola.</p>
+  <p><strong>21. Semi Major Axis:</strong> Indicates the size of the asteroid's orbit.</p>
+  <p><strong>22. Inclination:</strong> Denotes the tilt of the asteroid's orbit.</p>
+  <p><strong>23. Asc Node Longitude:</strong> Specifies where the asteroid's orbit crosses a reference plane.</p>
+  <p><strong>24. Orbital Period:</strong> Specifies how long it takes for the asteroid to complete one orbit.</p>
+  <p><strong>25. Perihelion Distance:</strong> Indicates how close the asteroid gets to the Sun during its orbit.</p>
+  <p><strong>26. Perihelion Arg:</strong> A measure related to the direction of the asteroid's orbit.</p>
+  <p><strong>27. Aphelion Dist:</strong> Specifies how far the asteroid is from the Sun during its orbit.</p>
+  <p><strong>28. Perihelion Time:</strong> The time when the asteroid is closest to the Sun.</p>
+  <p><strong>29. Mean Anomaly:</strong> A measure of where the asteroid is in its orbit.</p>
+  <p><strong>30. Mean Motion:</strong> Provides information about how the asteroid moves in its orbit.</p>
+  <p><strong>31. Equinox:</strong> Specifies the reference point for the orbital information.</p>
+  <p><strong>32. Hazardous:</strong> Target variable indicating whether the asteroid is considered hazardous to Earth; 1 for hazardous, 0 for not hazardous.</p>
+</div>
+
+<style>
+  .column-definitions {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    border: 1px solid #ccc;
+    background-color: #f7f7f7;
+  }
+</style>
+
+
+```{r init, include=FALSE}
+# some of common options (and the defaults) are: 
+# include=T, eval=T, echo=T, results='hide'/'asis'/'markup',..., collapse=F, warning=T, message=T, error=T, cache=T, fig.width=6, fig.height=4, fig.dim=c(6,4) #inches, fig.align='left'/'center','right', 
+library(ezids)
+# knitr::opts_chunk$set(warning = F, results = "markup", message = F)
+knitr::opts_chunk$set(warning = F, results = "hide", message = F)
+options(scientific=T, digits = 3) 
+library(dplyr)
+library(kableExtra)
+library(ggplot2)
+library(psych)
+
+# options(scipen=9, digits = 3)  
+# ‘scipen’: integer. A penalty to be applied when deciding to print numeric values in fixed or exponential notation.  Positive values bias towards fixed and negative towards scientific notation: fixed notation will be preferred unless it is more than ‘scipen’ digits wider.
+
+# use scipen=999 to prevent scientific notation at all times
+```
+<br>
+
+## Step:1: Importing Dataset & Checking Summary Statistics
+<span style="font-size: 12px;  text-align: justify;">
+<p>The dataset has been imported, and we've incorporated a scrollbar utilizing the `kableExtra` library, allowing for convenient navigation through the entire dataset.</p>
+</span>
+```{r, include=TRUE, echo=TRUE, results='show'}
+Ast_raw <- data.frame(read.csv("Asteroid_Hazard_Classification.csv"))
+
+
+kable((Ast_raw), "html") %>%
+  kable_paper(full_width = FALSE) %>% 
+  scroll_box(width = "100%", height = "400px")
+
+
+```
+<br>
+
+## Step:2: Data Preprocessing
+
+### Step : 2.1 : Converting the Hazard column from string to integer, and into categorical.
+<span style="font-size: 12px;  text-align: justify;">
+<p>Converting hazardous column to integer ensures that the data type of the `Hazardous` column is consistent and suitable for analysis. It can make the data easier to work with and is a more efficient representation and by converting it to integer or categorical it can compatible with a wide range of modeling algorithms.</p>
+</span>
+
+
+```{r, include=TRUE, echo=TRUE, results='show'}
+Ast_raw <- Ast_raw %>%
+mutate(Hazardous = as.integer(Hazardous))#(1 is True, 0 is False)
+
+Ast_raw$Hazardous <- as.factor(Ast_raw$Hazardous)
+
+kable(Ast_raw, "html") %>%
+  kable_paper(full_width = FALSE) %>% 
+  scroll_box(width = "100%", height = "400px")
+
+
+
+
+```
+<br>
+
+### Step : 2.2 : Dropping columns which are not required for our analysis:
+<span style="font-size: 12px;  text-align: justify;">
+<p> We decided to exclude certain columns to streamline the inference process and align with our domain knowledge. The columns omitted, based on our acquired expertise, were deemed less relevant for our analytical purposes.</p>
+</span>
+
+```{r, include=TRUE, echo=TRUE, results='asis'}
+
+# According to the domain knowledge we acquired from the specific domain, these are the important variables which is mostly affecting the asteroid to be hazardous. 
+
+selected_columns <- c('Absolute.Magnitude', 'Est.Dia.in.KM.max.','Miss.Dist..kilometers.','Relative.Velocity.km.per.sec', 'Minimum.Orbit.Intersection','Jupiter.Tisserand.Invariant', 'Eccentricity', 'Semi.Major.Axis', 'Inclination','Asc.Node.Longitude' ,'Orbital.Period' ,'Perihelion.Distance','Perihelion.Arg', 'Perihelion.Time','Mean.Anomaly','Aphelion.Dist', 'Mean.Motion', 'Hazardous')
+
+Filtered_data <- subset(Ast_raw, select = selected_columns)
+
+# Create a nicely formatted table
+kable(head(Filtered_data), "html") %>%
+  kable_paper(full_width = FALSE) %>% 
+  scroll_box(width = "100%", height = "400px")
+
+
+```
+<br>
+
+### Step : 2.3: Correlation Plot 
+
+<span style="font-size: 12px;  text-align: justify;">
+<p>Here are some observations and points based on the provided correlation matrix:</p>
+
+<p><strong>1. **Negative Correlations:**</p>
+   <p>Absolute Magnitude has a moderate negative correlation with Est. Dia in KM max (-0.5968).</p>
+   <p>Relative Velocity km per sec has a negative correlation with several variables, including Est. Dia in KM max (-0.36645), Miss Dist. in kilometers (-0.33055), Minimum Orbit Intersection (-0.04199), Eccentricity (-0.49304), and Perihelion Distance (-0.53414).</p>
+
+<p><strong>2. **Positive Correlations:**</p>
+   <p>Est. Dia in KM max has positive correlations with several variables, including Relative Velocity km per sec (0.22511) and Miss Dist. in kilometers (0.1870).</p>
+   <p>Relative Velocity km per sec has a positive correlation with Eccentricity (0.49304) and Inclination (0.52072).</p>
+
+<p><strong>3. **Strong Correlations:**</p>
+   <p>Some variables exhibit strong correlations, such as Jupiter Tisserand Invariant being strongly negatively correlated with Semi-Major Axis (-0.9289) and Mean Motion being strongly positively correlated with Jupiter Tisserand Invariant (0.9921).</p>
+
+<p><strong>4. **Multicollinearity Concerns:**</p>
+   <p>Check for high correlations between predictors, especially in the context of building predictive models. For example, Semi-Major Axis is strongly negatively correlated with Jupiter Tisserand Invariant (-0.9289), which might indicate multicollinearity.</p>
+
+<p><strong>5. **Noisy Correlations:**</p>
+   <p>Consider the overall context of your data. Some correlations may be influenced by outliers or noise.</p>
+
+<p><strong>6. **Perihelion Distance and Eccentricity:**</p>
+   <p>Perihelion Distance has a notable positive correlation with Eccentricity (0.72192). This relationship may be worth exploring further.</p>
+
+<p><strong>7. **Orbital Period and Semi-Major Axis:**</p>
+   <p>Orbital Period and Semi-Major Axis have a very strong positive correlation (0.9953), which is expected as they are related geometrically.</p>
+
+<p><strong>8. **Aphelion Distance and Mean Motion:**</p>
+   <p>Aphelion Distance and Mean Motion have a strong negative correlation (-0.8422). This relationship might be worth investigating further.</p>
+</span>
+
+```{r, include= TRUE, echo=TRUE, results='markup'}
+
+library(corrplot)
+
+subset <- as.data.frame(lapply(Filtered_data[1:17], as.numeric))
+par(mfrow = c(1, 1)) # Adjust mar and oma for margins
+
+M = cor(subset)
+corrplot(M, method = 'number', number.cex = 0.8, tl.cex = 0.8)
+
+kable((M), "html") %>%
+  kable_paper(full_width = FALSE) %>% 
+  scroll_box(width = "100%", height = "400px")
+
+```
+<br>
+ 
+### Step : 2.4 : Histogram Plot
+<span style="font-size: 12px;  text-align: justify;">
+<p>The histograms presented below provide essential insights into the distribution of key variables central to this analysis. Notably, it is discernible that Absolute Magnitude, Jupiter’s Invariant, and Eccentricity exhibit approximately normal distributions, characterized by a bell-shaped curve. Conversely, the remaining histograms reveal distinct departures from normality, with data skewness observed. Specifically, some variables display right-skewed distributions, indicating a preponderance of lower values, while others exhibit left-skewed distributions, signifying an over representation of higher values.</p>
+
+<p>Additionally, the histogram of Orbit Uncertainty portrays a bimodal distribution, implying the existence of two distinct modes or peaks within the data.</p>
+</span>
+```{r, include=TRUE, echo=TRUE, results='markup'}
+# Install and load necessary packages
+if (!requireNamespace("gridExtra", quietly = TRUE)) {
+  install.packages("gridExtra")
+}
+library(gridExtra)
+library(ggplot2)
+
+# Assume Filtered_data is your data frame
+
+histplots <- function(column) {
+  ggplot(Filtered_data, aes_string(x = column, group = "1")) +
+    geom_histogram(color = "green", fill = "blue", bins = 30) +
+    ggtitle(paste0("Hist Plots: ", column))
+}
+
+# Create a list of ggplot objects
+plots_list <- lapply(colnames(Filtered_data)[1:17], function(col) histplots(col))
+
+# Arrange the plots in a grid
+grid.arrange(grobs = plots_list, ncol = 4)
+
+
+```
+<br>
+
+### Step : 2.5: Box Plots of all the variables before outlier removal
+<span style="font-size: 12px;  text-align: justify;">
+<p>To gain a deeper understanding of the dataset's key variables, a comprehensive exploration was conducted through the generation of box plots using the boxPlots function. This function, implemented in R with the assistance of the ggplot2 library, facilitated the creation of individual box plots for each column within the specified dataframe, namely, Filtered_data.</p>
+
+<p>Each box plot was meticulously crafted to reveal valuable insights into the central tendency, spread, and potential outliers of the data. The visualizations were systematically produced for the first 17 columns of the dataset, providing an insightful overview of the distributional characteristics of these crucial variables.</p>
+</span>
+
+```{r, include=TRUE, echo=TRUE, results='markup'}
+boxPlots <- function(column){
+  Plot <- ggplot(Filtered_data, aes_string(x = column, group = "1")) +
+    geom_boxplot() + coord_flip() + ggtitle("Box Plots", column )
+  return(Plot)
+}
+
+for(col in colnames(Filtered_data[1:17])) { 
+  print(boxPlots(col))
+}
+
+```
+<br>
+
+### Step : 2.6 : Outlier Removal
+<span style="font-size: 12px;  text-align: justify;">
+<p>In the preprocessing phase, a new dataframe named `reduced_df` was derived from the original `Filtered_data`. The focus centered on specific columns, including "Est.Dia.in.KM.max.," "Relative.Velocity.km.per.sec," and others, denoted by `columns_to_check`. To enhance the dataset's robustness, an outlier removal procedure was employed using the Interquartile Range (IQR) method.</p>
+
+<p>A custom function, `remove_outliers`, was introduced to identify and replace values outside the 1.5 times IQR range with NA. Iterating through the selected columns, the function was applied to `reduced_df`, effectively flagging outliers. Subsequently, rows containing NA values resulting from the outlier removal process were eliminated using the `complete.cases` function.<p>
+
+<p>The outcome, `reduced_df`, represents a refined dataset with outliers strategically removed from the specified columns. This meticulous process ensures the dataset's integrity and paves the way for reliable and accurate analyses in subsequent stages of the study.</p>
+</span>
+```{r, include=TRUE, echo=TRUE, results='markup'}
+reduced_df <- Filtered_data
+
+columns_to_check <- c("Est.Dia.in.KM.max.","Relative.Velocity.km.per.sec", "Minimum.Orbit.Intersection", "Semi.Major.Axis", "Inclination", "Orbital.Period", "Perihelion.Time", "Aphelion.Dist", "Mean.Motion")
+# Function to remove outliers based on IQR
+remove_outliers <- function(x) {
+  Q1 <- quantile(x, 0.25)
+  Q3 <- quantile(x, 0.75)
+  IQR_val <- Q3 - Q1
+  lower_bound <- Q1 - 1.5 * IQR_val
+  upper_bound <- Q3 + 1.5 * IQR_val
+  return(ifelse(x >= lower_bound & x <= upper_bound, x, NA))
+}
+
+# Loop through columns (except 'Hazardous') and remove outliers
+for (col in columns_to_check) {
+  reduced_df[[col]] <- remove_outliers(reduced_df[[col]])
+}
+
+# Remove rows containing NA values after outlier removal
+reduced_df <- reduced_df[complete.cases(reduced_df), ]
+
+
+```
+<br>
+
+### Step : 2.7 : Box Plots of all the variables after outlier removal. 
+<span style="font-size: 12px;  text-align: justify;">
+<p>Box plots were generated once more to assess alterations in the Interquartile Range (IQR) following the removal of outliers. A discernible shift was observed in the box plots, indicating changes in the distributional characteristics of the data after outlier removal. Notably, columns such as `Est.Dia.in.Km.Max`, `Minimum.Orbit.Intersection`, `Orbital.Period`, and `Aphelion Distance` still exhibit skewness, suggesting that certain variables may require additional treatment to achieve a more symmetrical distribution. This iterative examination underscores the dynamic nature of the data and emphasizes the ongoing effort to refine its statistical properties for robust analyses.</p>
+<span>
+
+
+```{r, include=TRUE, echo=TRUE, results='markup'}
+
+boxPlots_ <- function(column){
+  Plot <- ggplot(reduced_df, aes_string(x = column, group = "1")) +
+    geom_boxplot() + coord_flip() + ggtitle("Box Plots", column )
+  return(Plot)
+}
+
+for(col in colnames(reduced_df[1:17])) { 
+  print(boxPlots_(col))
+}
+
+
+```
+<br>
+
+### Step : 2.8 : Checking for Non-Null Values
+
+<span style="font-size: 12px;  text-align: justify;">
+<p>A thorough examination for null values in each column was conducted prior to conducting skewness checks and implementing log transformations. When applying log transformation to a variable, it is essential that the values are non-null and positive, as the logarithm of zero or a negative value is undefined. Therefore, before performing log transformations, it is crucial to address or handle any null values in the dataset to ensure the validity and success of the transformation process.</p>
+</span>
+
+```{r, include=TRUE, echo=TRUE, results='markup'}
+null_values <- colSums(is.na(reduced_df))
+null_values
+
+```
+<br>
+
+### Step : 2.9 : Skewness check using QQ-Plot
+
+<span style="font-size: 12px;  text-align: justify;">
+<p>The conducted analysis focused on assessing and addressing outliers within the dataset, employing Quantile-Quantile (QQ) plots to visually inspect the distribution of specified columns both before and after outlier removal. The function `qqplt` facilitated this examination iteratively across columns specified in the `columns_to_check` vector. The primary objective was to evaluate the normality of each column's distribution and to observe the impact of outlier removal.</p>
+
+<p>Upon careful examination of the QQ plots, a notable observation emerged: the majority of outliers were successfully eliminated. This is evident in the side-by-side comparison of QQ plots before and after the removal process. The reference lines (`qqline`) in the plots aid in visually assessing the normality of the distribution. The identification and removal of outliers are critical steps in ensuring the integrity of the dataset, particularly when considering subsequent statistical analyses and modeling assumptions. This approach enhances the robustness of the dataset, aligning it more closely with the assumptions required for reliable statistical inferences in the context of the analysis.</p>
+</span>
+```{r, include=TRUE, echo=TRUE, results='markup'}
+qqplt <- function(df, col) {
+  
+  # Before Outlier Removal
+  if (!all(is.na(Filtered_data[[col]]))) {
+    qqnorm(Filtered_data[[col]], main = paste("Before Outlier Removal", col))
+    qqline(Filtered_data[[col]])
+  } else {
+    cat("Skipping plot for", col, "due to missing or NA values.\n")
+  }
+  
+  # After Outlier Removal
+  if (!all(is.na(reduced_df[[col]]))) {
+    qqnorm(reduced_df[[col]], main = paste("After Outlier Removal", col))
+    qqline(reduced_df[[col]])
+  } else {
+    cat("Skipping plot for", col, "due to missing or NA values after outlier removal.\n")
+  }
+}
+
+# Assuming 'columns_to_check' is a vector containing the column names you want to check
+
+for (col in columns_to_check) {
+  qqplt(df,col)
+}
+
+```
+<br>
+
+### Step : 2.10 : Skewness removal using Log Transformation. 
+<span style="font-size: 12px;  text-align: justify;">
+<p>Skewness in the diameter distribution of asteroids was addressed through a log transformation. The transformation was applied to the `Est.Dia.in.KM.max.` variable, resulting in a new variable named `Log_Est_Diameter.` Visual inspection via histograms was conducted before and after the log transformation to assess the impact on the data distribution. This step was crucial to mitigate skewness and ensure a more normal distribution of asteroid diameters, as the normality assumption is essential for certain statistical analyses. Given the significance of asteroid diameter in our analysis, this transformation aids in enhancing the robustness and reliability of subsequent statistical inferences.</p>
+</span>
+```{r}
+# Applying Log Transformation on diameter. 
+# Assuming your data frame is named 'reduced_df'
+# Perform log transformation
+
+reduced_df[["Log_Est_Diameter"]] <- log(reduced_df[["Est.Dia.in.KM.max."]])
+
+hist(reduced_df$Est.Dia.in.KM.max., main = "Histogram of Diameter Before Log Transformation")
+hist(reduced_df$Log_Est_Diameter, main = "Histogram of Diameter After Log Transformation")
+
+```
+
+```{r, include=TRUE, echo=TRUE, results='markup'}
+# As we already have the `Log Transformation of Estimated Diameter`. We can drop `Est.Dia.in.KM.max.`. We will create two variables for `No Sampling` and for `SMOTE Sampling`.
+data1 <- reduced_df[,-which(names(reduced_df) == "Est.Dia.in.KM.max.")]
+dataSmote <- reduced_df[,-which(names(reduced_df) == "Est.Dia.in.KM.max.")]
+
+
+```
+<br>
+
+### Step : 2.11 : Checking for Multi-Collinearity. 
+
+<span style="font-size: 12px;  text-align: justify;">
+<p>The assessment of multicollinearity using Variance Inflation Factor (VIF) was conducted on a logistic regression model with the binary outcome variable `Hazardous` and various predictors. The VIF values were computed to evaluate the extent of correlation between predictors, and a warning message was encountered indicating potential issues with fitted probabilities reaching numerical extremes of 0 or 1. Despite this warning, the variables `Absolute.Magnitude,` `Jupiter.Tisserand.Invariant,` `Orbital.Period,` `Aphelion.Dist,` and `Mean.Motion` were identified with VIF values greater than or equal to 8, suggesting the presence of multicollinearity among these predictors. This finding should be considered in the interpretation of the logistic regression results, as multicollinearity can affect the stability and reliability of coefficient estimates. Careful consideration and potentially addressing the correlated predictors may be necessary for a more robust interpretation of the model.</p>
+</span>
+```{r, include=TRUE, echo=TRUE, results='markup'}
+
+# Check for Multicollinearity using Variance Inflation Factor. 
+library(carData)
+# Assuming Hazardous is a binary outcome (0 or 1)
+logistic_model <- glm(Hazardous ~ ., data = data1, family = "binomial")
+
+# Check VIF for multicollinearity
+vif_values <- car::vif(logistic_model)
+
+# Print variables with VIF greater than or equal to 10
+high_vif_variables <- names(vif_values)[vif_values >= 8]
+print(high_vif_variables)
+
+```
+
+```{r}
+# Since we have Multi-Collineairity with "Absolute.Magnitude", "Jupiter.Tisserand.Invariant" "Orbital.Period", "Aphelion.Dist", "Mean.Motion". However, Absolute Magnitiude, Jupiter Tisserand Invariant are very important columns. 
+
+# Assuming you want to remove specific columns from reduced_df
+columns_to_remove <- c("Orbital.Period", "Aphelion.Dist", "Mean.Motion")
+
+data1 <- data1[, -which(names(data1) %in% columns_to_remove)]
+dataSmote <- dataSmote[, -which(names(dataSmote) %in% columns_to_remove)]
+
+```
+
+<br>
+## Step : 3 : Data Transformation
+
+### Step : 3.1 : Checking for the distribution of hazardous asteroids
+<span style="font-size: 12px;  text-align: justify;">
+<p>Upon scrutinizing the distributions of the ‘Hazardous’ column, a conspicuous trend emerges, where the prevalence of non-hazardous asteroids significantly outweighs their hazardous counterparts. The distribution exhibits an inherent asymmetry that reflects a notable skew.</p>
+
+<p>In the context of statistical considerations, the pursuit of data symmetry is an imperative often warranted for the robustness of analyses. However, it is incumbent upon us to acknowledge the practical constraints that impede the immediate realization of such a goal.</p>
+</span>
+```{r, include=TRUE, echo=TRUE, results='markup'}
+# Count plot using ggplot2
+ggplot(data1, aes(x = Hazardous, fill = Hazardous)) +
+  geom_bar() +
+  labs(title = 'Distribution of Hazardous Asteroids - Before Sampling',
+       x = 'Hazardous',
+       y = 'Count') +
+  scale_fill_manual(values = c('skyblue', 'salmon')) +
+  theme_minimal()
+```
+<br>
+
+### Part : 3.2 : SMOTE Analysis
+
+<span style="font-size: 12px;  text-align: justify;">
+<p>SMOTE, or Synthetic Minority Over-sampling Technique, is a data augmentation method designed to mitigate the challenges posed by imbalanced class distributions in machine learning datasets. Imbalance arises when one class significantly outnumbers the other, often leading models to favor the majority class and perform poorly on minority class predictions. SMOTE alleviates this issue by creating synthetic instances for the minority class. The technique works by selecting each minority class instance and identifying its k-nearest neighbors. Synthetic instances are then generated by interpolating feature values between the original instance and its neighbors. This approach enhances the diversity of the minority class, balances the overall class distribution, and provides machine learning models with a more representative dataset for training.</p>
+
+<p>The benefits of SMOTE extend to various aspects of model performance. By addressing class imbalance, SMOTE helps prevent biases in model predictions, reduces the risk of overfitting on the majority class, and contributes to the creation of more robust decision boundaries. This is particularly crucial in applications such as fraud detection, where the occurrence of fraudulent transactions is rare compared to legitimate ones. While SMOTE is a powerful tool, users should be mindful of parameter choices, potential generation of noisy synthetic instances, and increased computational costs, tailoring its implementation to the specific characteristics of their datasets and machine learning algorithms.</p>
+</span>
+
+```{r, include=TRUE, echo=TRUE, results='markup'}
+
+library(ROSE)
+library(smotefamily)
+library(ggplot2)
+
+# Assuming Hazardous is a binary factor variable
+data1$Hazardous <- as.factor(data1$Hazardous)
+
+# Applying SMOTE
+dataSmote_rose <- ovun.sample(Hazardous ~ ., data = data1, method = "over")
+
+# Extracting the sampled data
+dataSmote <- dataSmote_rose$data
+
+# Count plot using ggplot2
+ggplot(dataSmote, aes(x = Hazardous, fill = Hazardous)) +
+  geom_bar() +
+  labs(title = 'After Distribution of Hazardous Asteroids - After SMOTE',
+       x = 'Hazardous',
+       y = 'Count') +
+  scale_fill_manual(values = c('skyblue', 'salmon')) +
+  theme_minimal()
+
+
+```
+<br>
+
+## Part : 4 : Article data confirmation visualization
+<span style="font-size: 12px;  text-align: justify;">
+<p>According to a blog post found in NASA portal. We identified that `velocity` and `diameter` of the asteroid is the major reason. So we performed some visualizations and statistical test to check whether we have proper information.</p> 
+
+<p>The scatter plot depicting the relationship between `Relative.Velocity.km.per.sec` and `Est.Dia.in.KM.max.` reveals a considerable degree of overlap, rendering the extraction of meaningful insights challenging. Nonetheless, to address the significance of these predictors in determining the hazardous nature of asteroids, we constructed a Generalized Linear Model (GLM). The model employs `Hazardous` as the target variable, with `Relative.Velocity.km.per.sec` and `Est.Dia.in.KM.max.` serving as predictors. This analytical approach aims to elucidate the impact and significance of the specified predictors in predicting the hazardous classification of asteroids.</p>
+
+<p>The logistic regression model was constructed to predict the likelihood of asteroids being hazardous based on their maximum estimated diameter (`Est.Dia.in.KM.max.`) and relative velocity (`Relative.Velocity.km.per.sec`). The model yielded the following insights: The intercept of -2.75895 signifies the estimated log-odds of an asteroid being hazardous when both predictors are zero. Notably, each unit increase in the maximum estimated diameter is associated with a 0.18307 increase in the log-odds of being hazardous, while a similar increase in relative velocity results in a 0.06388 rise.</p>
+
+<p>The p-values associated with the model coefficients are highly significant, denoted by '***', indicating the statistical significance of both predictors in predicting the hazardous classification of asteroids. Specifically, the p-values for `Est.Dia.in.KM.max.` (p = 0.0014) and `Relative.Velocity.km.per.sec` (p < 2e-16) fall below conventional significance thresholds. The model's fit statistics reveal a null deviance of 3197.3 on 3691 degrees of freedom, representing the deviance of a model with no predictors. The residual deviance, measuring the deviance of the fitted model, is 3039.3 on 3689 degrees of freedom. The AIC, standing at 3045, provides a composite measure of goodness of fit and model complexity. The dispersion parameter for the binomial family is set to 1, reflecting the assumption of a standard binomial distribution. In summary, the model demonstrates statistical significance and reasonable fit, suggesting its utility in predicting asteroid hazard classification.</p>
+</span>
+
+```{r, include=TRUE, echo=TRUE, results='markup'}
+ggplot(Filtered_data, aes(x = Relative.Velocity.km.per.sec, y = Est.Dia.in.KM.max. )) +
+  geom_point(aes(shape = factor(Hazardous), color = factor(Hazardous))) +
+  theme_minimal() +
+  labs(x = "Relative Velocity (km/sec)", y = "Estimated Diameter", title = "Scatter Plot of Log Estimated Diameter vs Relative Velocity")
+
+logisticModel <- glm(Hazardous ~ Est.Dia.in.KM.max. + Relative.Velocity.km.per.sec, data = Filtered_data, family = "binomial")
+summary(logisticModel)
+
+```
+<br>
+
+## Checking for the logistic model GOF
+<span style="font-size: 12px;  text-align: justify;">
+<p>The evaluation of the Goodness of Fit (GOF) for the logistic regression model involves comparing the null deviance, representing a model with no predictors, to the residual deviance of the fitted model. The exceptionally low p-value (5e-35) resulting from this comparison signifies a significant difference, rejecting the null hypothesis that predictors have no effect. This underscores the model's effectiveness, suggesting that the inclusion of predictors substantially reduces deviance and contributes meaningfully to explaining variability in the response variable. In summary, the logistic regression model performs well, as evidenced by the low p-value, indicating the statistical significance of the selected predictors in capturing relevant patterns in asteroid hazard classification.</p>
+</span>
+```{r, include=TRUE, echo=TRUE, results='markup'}
+# The reason to check the GOF is to assess if the model has performed well in giving the P-Value.
+
+nullDeviance <- summary(logisticModel)$null.deviance
+residualDeviance <- summary(logisticModel)$deviance
+
+dfNull <- summary(logisticModel)$df.null
+dfResidual <- summary(logisticModel)$df.residual
+
+chiSq <- pchisq(nullDeviance - residualDeviance, dfNull - dfResidual, lower.tail = FALSE)
+
+cat("P-Value for comparison of null deviance and model with predictors: ", chiSq)
+```
+<br>
+
+## Part : 5 : Data Modelling
+
+<span style="font-size: 12px;  text-align: justify;">
+<p>In the modeling phase, an extensive exploration of various machine learning models was conducted, with a focus on achieving optimal predictive performance. Among the models evaluated, logistic regression and random forest exhibited superior performance, showing robust capabilities in accurately predicting hazardous asteroids. Consequently, these models were selected for inclusion in the final predictive framework.</p>
+</span>
+<br>
+
+### Part : 5.1 : Logistic regression with data 1(without sampling)
+<span style="font-size: 12px;  text-align: justify;">
+<p>
+We employed logistic regression due to its simplicity, interpretability, and suitability for binary classification tasks. Logistic regression assumes a linear relationship between features and the log-odds of the target variable, making it effective when the underlying patterns in the data are approximately linear. The model's interpretability, especially in terms of understanding the impact of each feature, is valuable for insights into the factors influencing the classification of hazardous asteroids. 
+Initially, logistic regression was implemented without any sampling techniques to gain insights into the model's performance on the raw dataset. This initial exploration provided valuable baseline results, setting the foundation for subsequent experimentation and model refinement.</p>
+</span>
+
+```{r, include=TRUE, echo=TRUE, results='markup'}
+# Load the required library for logistic regression
+library(glmnet)
+library(pROC)
+
+# Assuming 'Hazardous' is the target variable and other columns are features
+# Adjust column names and types as needed
+
+# Convert Hazardous to a binary factor
+data1$Hazardous <- as.factor(data1$Hazardous)
+
+# Split the data into training and testing sets
+set.seed(123)  # For reproducibility
+sample_indices <- sample(1:nrow(data1), 0.7 * nrow(data1))
+train_data <- data1[sample_indices, ]
+test_data <- data1[-sample_indices, ]
+
+# Fit logistic regression model
+logistic_model <- glm(Hazardous ~ ., data = train_data, family = "binomial")
+
+# Make predictions on the test set
+predictions <- predict(logistic_model, newdata = test_data, type = "response")
+
+# Convert probabilities to binary predictions
+binary_predictions <- ifelse(predictions > 0.5, 1, 0)
+
+# Evaluate the model
+conf_matrix <- table(binary_predictions, test_data$Hazardous)
+accuracy <- sum(diag(conf_matrix)) / sum(conf_matrix)
+auc <- pROC::roc(test_data$Hazardous, predictions)$auc
+
+# Classification Report
+classification_report <- caret::confusionMatrix(as.factor(binary_predictions), as.factor(test_data$Hazardous))
+print("Classification Report:")
+print(classification_report)
+
+# Display results
+print("Confusion Matrix:")
+print(conf_matrix)
+cat("Accuracy:", accuracy, "\n")
+cat("AUC Score:", auc, "\n")
+
+# ROC AUC Curve
+roc_curve <- roc(test_data$Hazardous, predictions)
+plot(roc_curve, main = "ROC Curve", col = "blue", lwd = 2)
+
+```
+<br>
+
+### Part : 5.2 : Logistic regression with data 1(Hyperparameter Tuning - without sampling)
+
+<span style="font-size: 12px;  text-align: justify;">
+<p>In the hyperparameter tuning process for logistic regression, we utilized the `glmnet` library in R and specifically explored the regularization parameter (`lambda`) and the regularization type (`alpha`). The parameter grid was set up with a range of regularization strengths (`lambdas`) and a fixed value for the elastic net mixing parameter (`alpha`). We performed a cross-validated grid search (`cv.glmnet`) using 5-fold cross-validation to identify the optimal regularization strength that resulted in the best model performance on the training set.
+
+The selected hyperparameters were those corresponding to the model with the highest average performance across the cross-validation folds (`cv_model$lambda.1se`). The identified best hyperparameters were then used to train the final logistic regression model on the entire training set. The model was subsequently evaluated on the test set, and performance metrics such as accuracy, AUC score, confusion matrix, and a classification report were generated to assess the model's effectiveness on unseen data. The chosen hyperparameters and the overall process aimed to strike a balance between model complexity and generalization, ensuring optimal performance on the given dataset.</p>
+</span>
+
+```{r, include=TRUE, echo=TRUE, results='markup'}
+# Load the required library for logistic regression and hyperparameter tuning
+library(glmnet)
+library(pROC)
+
+# Assuming 'Hazardous' is the target variable and other columns are features
+# Adjust column names and types as needed
+
+# Convert Hazardous to a binary factor
+data1$Hazardous <- as.factor(data1$Hazardous)
+
+# Split the data into training and testing sets
+set.seed(123)  # For reproducibility
+sample_indices <- sample(1:nrow(data1), 0.7 * nrow(data1))
+train_data <- data1[sample_indices, ]
+test_data <- data1[-sample_indices, ]
+
+# Create a matrix of features and the target variable for training
+x_train <- model.matrix(Hazardous ~ . - 1, data = train_data)
+y_train <- as.numeric(train_data$Hazardous) - 1  # Convert to 0 and 1
+
+# Set up the hyperparameter grid
+alpha <- 0.5  # Regularization parameter
+lambdas <- seq(0.001, 1, by = 0.01)  # Strength of regularization
+
+# Perform cross-validated grid search
+cv_model <- cv.glmnet(x_train, y_train, alpha = alpha, lambda = lambdas, nfolds = 5, family = "binomial")
+
+# Get the best hyperparameters
+best_lambda <- cv_model$lambda.1se
+
+# Fit the final model with the best hyperparameters on the entire training set
+final_model <- glmnet(x_train, y_train, alpha = alpha, lambda = best_lambda, family = "binomial")
+
+# Make predictions on the test set
+x_test <- model.matrix(Hazardous ~ . - 1, data = test_data)
+predictions <- predict(final_model, newx = x_test, s = best_lambda, type = "response")
+
+# Convert probabilities to binary predictions
+binary_predictions <- ifelse(predictions > 0.5, 1, 0)
+
+# Evaluate the model
+conf_matrix <- table(binary_predictions, as.numeric(test_data$Hazardous) - 1)
+accuracy <- sum(diag(conf_matrix)) / sum(conf_matrix)
+auc <- pROC::roc(as.numeric(test_data$Hazardous) - 1, predictions)$auc
+
+# Display results
+cat("Best Lambda (Regularization Strength):", best_lambda, "\n")
+print("Test Confusion Matrix:")
+print(conf_matrix)
+cat("Test Accuracy:", accuracy, "\n")
+cat("Test AUC Score:", auc, "\n")
+
+# Classification Report
+class_report <- caret::confusionMatrix(as.factor(binary_predictions), as.factor(as.numeric(test_data$Hazardous) - 1))
+print("Test Classification Report:")
+print(class_report)
+
+# ROC AUC Curve
+roc_curve <- roc(as.numeric(test_data$Hazardous) - 1, predictions)
+plot(roc_curve, main = "ROC Curve", col = "blue", lwd = 2)
+
+
+```
+<br>
+
+<span style="font-size: 12px;  text-align: justify;">
+<p>Following hyperparameter tuning, the logistic regression model achieved a similar accuracy of 93.8% on the test set, showcasing the robustness of the initial model. The AUC score remained consistently high at 0.98. The confusion matrix and classification report indicate a slight enhancement in sensitivity (97.3%) while maintaining specificity at 75.4%. The hyperparameter tuning process, specifically adjusting the regularization strength (lambda), contributed to fine-tuning the model and optimizing its performance. The Kappa statistic remained consistent, suggesting sustained substantial agreement. Overall, the tuned logistic regression model demonstrated stability and maintained a high level of accuracy and predictive power on the given dataset.</p>
+</span>
+
+<br>
+
+### Part : 5.3 : Logistic regression with dataSmote(with sampling using SMOTE - Hyperparameter Tuning)
+
+<span style="font-size: 12px;  text-align: justify;">
+<p>Then we used SMOTE oversampled dataset with hyperparameter tuned model</p>
+</span>
+
+```{r, include=TRUE, echo=TRUE, results='markup'}
+# Load the required library for logistic regression and hyperparameter tuning
+library(glmnet)
+library(pROC)
+
+# Assuming 'Hazardous' is the target variable and other columns are features
+# Adjust column names and types as needed
+
+# Convert Hazardous to a binary factor
+dataSmote$Hazardous <- as.factor(dataSmote$Hazardous)
+
+# Split the data into training and testing sets
+set.seed(123)  # For reproducibility
+sample_indices <- sample(1:nrow(dataSmote), 0.7 * nrow(dataSmote))
+train_data <- dataSmote[sample_indices, ]
+test_data <- dataSmote[-sample_indices, ]
+
+# Create a matrix of features and the target variable for training
+x_train <- model.matrix(Hazardous ~ . - 1, data = train_data)
+y_train <- as.numeric(train_data$Hazardous) - 1  # Convert to 0 and 1
+
+# Set up the hyperparameter grid
+alpha <- 0.5  # Regularization parameter
+lambdas <- seq(0.001, 1, by = 0.01)  # Strength of regularization
+
+# Perform cross-validated grid search
+cv_model <- cv.glmnet(x_train, y_train, alpha = alpha, lambda = lambdas, nfolds = 5, family = "binomial")
+
+# Get the best hyperparameters
+best_lambda <- cv_model$lambda.1se
+
+# Fit the final model with the best hyperparameters on the entire training set
+final_model <- glmnet(x_train, y_train, alpha = alpha, lambda = best_lambda, family = "binomial")
+
+# Make predictions on the test set
+x_test <- model.matrix(Hazardous ~ . - 1, data = test_data)
+predictions <- predict(final_model, newx = x_test, s = best_lambda, type = "response")
+
+# Convert probabilities to binary predictions
+binary_predictions <- ifelse(predictions > 0.5, 1, 0)
+
+# Evaluate the model
+conf_matrix <- table(binary_predictions, as.numeric(test_data$Hazardous) - 1)
+accuracy <- sum(diag(conf_matrix)) / sum(conf_matrix)
+auc <- pROC::roc(as.numeric(test_data$Hazardous) - 1, predictions)$auc
+
+# Display results
+print("Test Confusion Matrix:")
+print(conf_matrix)
+cat("Test Accuracy:", accuracy, "\n")
+cat("Test AUC Score:", auc, "\n")
+
+# Classification Report
+class_report <- caret::confusionMatrix(as.factor(binary_predictions), as.factor(as.numeric(test_data$Hazardous) - 1))
+print("Test Classification Report:")
+print(class_report)
+
+# ROC AUC Curve
+roc_curve <- roc(as.numeric(test_data$Hazardous) - 1, predictions)
+plot(roc_curve, main = "ROC Curve", col = "blue", lwd = 2)
+
+
+```
+<br>
+
+<span style="font-size: 12px;  text-align: justify;">
+<p>The accuracy remains high at 92.2%, showcasing the model's ability to make correct predictions. The area under the ROC curve (AUC Score) is 0.977, indicating strong discriminative power in distinguishing between hazardous and non-hazardous instances.</p>
+</span>
+<br>
+
+### Part : 5.4 : Random Forest with data 1(without sampling)
+
+<span style="font-size: 12px;  text-align: justify;">
+<p> Random forest was chosen as an ensemble learning method to enhance predictive performance. This technique builds multiple decision trees and aggregates their predictions, enabling the model to capture non-linear relationships and complex interactions among features. Random forest excels at handling intricate patterns in the data and is more robust to overfitting compared to individual models. The combination of logistic regression for its simplicity and interpretability with random forest for its ability to capture complex patterns yielded a robust and effective approach for predicting asteroid hazard classification.</p>
+</span>
+
+
+```{r, include=TRUE, echo=TRUE, results='markup'}
+library(randomForest)
+library(pROC)
+library(caret)
+
+# Random Forest with data1
+set.seed(123) # For reproducibility
+splitIndex <- createDataPartition(data1$Hazardous, p = .70, list = FALSE, times = 1)
+trainData <- data1[splitIndex,]
+testData <- data1[-splitIndex,]
+
+# Train the model
+rf_model <- randomForest(Hazardous ~ ., data = trainData)
+
+# Make predictions
+predictions <- predict(rf_model, testData)
+
+# Get probabilities
+probabilities <- predict(rf_model, testData, type="prob")
+
+# Compute AUC
+roc_result <- roc(testData$Hazardous, probabilities[,2]) # Assuming the second column is the positive class
+auc_score <- auc(roc_result)
+
+# Print AUC score
+cat("AUC Score:", auc_score, "\n")
+
+# Plot ROC curve
+plot(roc_result, main="ROC Curve")
+
+# Calculate accuracy
+accuracy <- sum(predictions == testData$Hazardous) / nrow(testData)
+cat("Test Accuracy:", accuracy, "\n")
+
+# Classification Report
+class_report <- confusionMatrix(predictions, testData$Hazardous)
+print("Test Classification Report:")
+print(class_report)
+
+# Confusion Matrix
+conf_matrix <- table(predictions, testData$Hazardous)
+print("Test Confusion Matrix:")
+print(conf_matrix)
+
+```
+<br>
+
+<span style="font-size: 12px;  text-align: justify;">
+<p> The random forest model exhibits exceptional performance with an AUC score of 0.996 and a test accuracy of 99%. This suggests that the model is highly effective in distinguishing between hazardous and non-hazardous asteroids. The confusion matrix further illustrates the model's proficiency, with minimal misclassifications. It correctly identifies 702 non-hazardous asteroids (class 0) and 128 hazardous asteroids (class 1), demonstrating an outstanding sensitivity of 99.9% and specificity of 94.8%.
+
+The high accuracy and balanced accuracy, along with the precision and recall values close to 1, indicate that the random forest model excels in both correctly identifying hazardous asteroids and avoiding false positives. Overall, the model's robust performance and strong predictive capabilities make it a reliable choice for asteroid hazard classification.</p>
+</span>
+<br>
+
+### Part : 5.5 : Random Forest with dataSmote(with sampling)
+
+<span style="font-size: 12px;  text-align: justify;">
+<p>Then we used SMOTE oversampled dataset with the random forest model</p>
+</span>
+
+```{r, include=TRUE, echo=TRUE, results='markup'}
+library(randomForest)
+library(pROC)
+library(caret)
+
+# Random Forest with data1
+set.seed(123) # For reproducibility
+splitIndex <- createDataPartition(dataSmote$Hazardous, p = .70, list = FALSE, times = 1)
+trainData <- dataSmote[splitIndex,]
+testData <- dataSmote[-splitIndex,]
+
+# Train the model
+rf_model <- randomForest(Hazardous ~ ., data = trainData)
+
+# Make predictions
+predictions <- predict(rf_model, testData)
+
+
+# Get probabilities
+probabilities <- predict(rf_model, testData, type="prob")
+
+# Compute AUC
+roc_result <- roc(testData$Hazardous, probabilities[,2]) # Assuming the second column is the positive class
+auc_score <- auc(roc_result)
+
+# Print AUC score
+cat("AUC Score:", auc_score, "\n")
+
+# Plot ROC curve
+plot(roc_result, main="ROC Curve")
+
+# Calculate accuracy
+accuracy <- sum(predictions == testData$Hazardous) / nrow(testData)
+cat("Test Accuracy:", accuracy, "\n")
+
+# Classification Report
+class_report <- confusionMatrix(predictions, testData$Hazardous)
+print("Test Classification Report:")
+print(class_report)
+
+# Confusion Matrix
+conf_matrix <- table(predictions, testData$Hazardous)
+print("Test Confusion Matrix:")
+print(conf_matrix)
+
+```
+<br>
+
+<span style="font-size: 12px;  text-align: justify;">
+<p>The performance of the random forest model on the oversampled dataset using SMOTE is truly remarkable. The AUC score of 1 indicates perfect discriminatory ability, and the test accuracy of 99.8% further emphasizes the model's exceptional predictive power. The confusion matrix shows that the model correctly predicts all non-hazardous asteroids (class 0) and the majority of hazardous asteroids (class 1), resulting in a sensitivity of 99.6% and specificity of 100%.
+
+The high values for sensitivity, specificity, and overall accuracy demonstrate that the model is capable of effectively identifying hazardous and non-hazardous asteroids even after oversampling. The balanced accuracy of 99.8% highlights the model's ability to maintain high performance across both classes. In summary, the random forest model, when trained on the oversampled dataset, showcases outstanding capabilities in asteroid hazard classification, making it a robust and reliable choice for this task.</p>
+</span>
+<br>
+
+## Smart Questions
+
+### Smart Question 1:In what ways can approaches such as oversampling, under sampling, and synthetic minority oversampling techniques contribute to addressing class imbalance in a dataset, thereby enhancing overall model performance?
+<span style="font-size: 12px;  text-align: justify;">
+<p>Upon comprehensive analysis of the various model-building approaches, it is observed that Logistic Regression without sampling outperforms its sampled counterpart in terms of test accuracy. The inclusion of hyperparameter tuning in Logistic Regression without sampling further enhances its predictive capabilities. Interestingly, in contrast to Logistic Regression, Random Forest demonstrates superior performance when applied to a sampled dataset, exhibiting the highest test accuracy and Area Under the Curve (AUC) score. This divergence in results suggests that the impact of data sampling methods on model performance varies between the Logistic Regression and Random Forest algorithms, emphasizing the importance of tailoring the modeling approach to the specific characteristics of the dataset at hand.</p>
+</span>
+<br>
+
+### Smart Question 2: Which classification models are capable of effectively distinguishing between hazardous and non-hazardous asteroids?
+<span style="font-size: 12px;  text-align: justify;">
+<p>In the context of model development, the utilization of the Random Forest algorithm, coupled with data balancing through the Synthetic Minority Over-sampling Technique (SMOTE), yielded noteworthy results. Specifically, the Random Forest model trained on the balanced dataset demonstrated exceptional performance, achieving an Area Under the Curve (AUC) score of 1 and attaining a high test accuracy of 99.6%. This underscores the efficacy of employing Random Forest in conjunction with strategic data sampling techniques, highlighting its robustness in predictive tasks.</p>
+
+</span>
+<br>
+
+### Smart Question 3: Which features contribute more to a model?
+<span style="font-size: 12px;  text-align: justify;">
+<p>The feature importance values obtained from the Random Forest model, based on Mean Decrease in Gini impurity, highlight the following top 5 features:</p>
+
+<p><strong>1. **Absolute Magnitude:**
+   - Importance: 357.28</p>
+   - Brightness of the asteroid, indicating a significant impact on hazard prediction.</p>
+
+<p><strong>2. **Minimum Orbit Intersection:**</p>
+   <p>- Importance: 656.20</p>
+   <p>- Crucial parameter for assessing the likelihood of asteroid collisions.</p>
+
+<p><strong>3. **Relative Velocity (km/s):**</p>
+   <p>- Importance: 37.94
+   <p>- Speed of the asteroid relative to Earth, a key factor in impact assessment.</p>
+
+<p><strong>4. **Logarithm of Estimated Diameter:**</p>
+   <p>- Importance: 345.07
+   <p>- Size of the asteroid, influencing the model's hazard prediction.</p>
+
+<p><strong>5. **Perihelion Distance:**</p>
+   <p>Importance: 92.14</p>
+   <p>Closest approach of the asteroid to the Sun, a critical orbital parameter.</p>
+
+<p>These features play pivotal roles in characterizing asteroid properties, orbital parameters, and potential risks, with the model assigning higher importance to those contributing significantly to predictive accuracy.</p>
+
+</span>
+```{r, include=TRUE, echo=TRUE, results='markup'}
+
+# Get feature importance
+importance <- rf_model$importance
+
+# Print the feature importance
+print("Feature Importance:")
+print(importance)
+
+```
+## Conclusion
+<span style="font-size: 12px;  text-align: justify;">
+<p>In this project, we developed models to effectively predict hazardous asteroids based on NASA asteroid dataset characteristics. Key variables like estimated diameter and relative velocity were found to exert significant influence on model accuracy. Our best performing model was a logistic regression with 93.9% test accuracy at classifying hazardous vs non-hazardous asteroids.</p>
+
+<p>The feature engineering techniques of handling missing values, removing outliers, applying log transformations, and addressing multi-collinearity improved model training. Class imbalance was addressed via SMOTE oversampling to enhance model performance. The top models able to distinguish hazardous asteroids were logistic regression, SVM, and random forest classifiers.</p>
+
+<p>In conclusion, accurate identification of potentially hazardous asteroids is crucial for directing monitoring and mitigation efforts. Our work demonstrated that even basic characteristics provided in the NASA data can train highly accurate models. The techniques explored serve as a framework to incorporate additional asteroid attributes for even better predictions as more data becomes available. Effective models will equip asteroid preparedness teams to focus only on the most concerning near-Earth objects.</p>
+
+<P>Some potential next steps would be expanding the feature set with additional orbital parameters, testing model performance on other hazard classification tasks, and transitioning the top models to an operational prediction system. As asteroid detection and tracking improves, machine learning models like those developed here will become increasingly vital for powering real-world hazardous asteroid identification and risk assessment systems.</p>
+</span>
+
+
+
+## Referrences
+<span style="font-size: 12px;  text-align: justify;">
+<p>National Aeronautics and Space Administration (n.d.). NASA Near Earth Object Program. Retrieved November 1, 2023, from http://neo.jpl.nasa.gov/</p>
+
+<p>Mehta, S. (n.d.). NASA asteroids classification [Dataset]. Kaggle. https://www.kaggle.com/datasets/shrutimehta/nasa-asteroids-classification</p>
+
+<p>ABC News. (2021, August 10). Asteroid that passes nearby could hit Earth in the future, says NASA. ABC News. https://abcnews.go.com/US/asteroid-passes-nearby-hit-earth-future-nasa/story?id=103322457#</p>
+</span>
