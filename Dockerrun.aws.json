@@ -1,0 +1,8 @@
+{
+"AWSEBDockerrunVersion": "1",
+"Image": {
+    "Name": "https://github.com/QibinHuang/Evaluating-Asteroid-Characteristics-And-Classifying-Asteroid-Threat-On-Planet-Earth.git",
+    "Update": "true"
+},
+"Ports": [ { "ContainerPort" : 3000 } ]
+}
